@@ -1,33 +1,57 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Data;
-using System.Windows.Forms;
 using System.Runtime.Serialization;
 using System.Drawing.Imaging;
 
 namespace dotnetpaint
 {
+	/// <summary>
+	/// Клас, який представляє шар для малювання.
+	/// </summary>
 	[Serializable()]
 	class Layer : ISerializable
 	{
+		/// <summary>
+		/// Зображення шару.
+		/// </summary>
 		private Bitmap layerImage;
-		//[NonSerialized]
+		/// <summary>
+		/// Об'єкт Graphics для роботи із зображенням.
+		/// </summary>
 		private Graphics layerGraphics;
+		/// <summary>
+		/// Ім'я шару.
+		/// </summary>
 		private string layerName;
-		//[NonSerialized]
+		/// <summary>
+		/// Розмір шару.
+		/// </summary>
 		private Size layerSize;
+		/// <summary>
+		/// Мітка, що позначає видимість шару.
+		/// </summary>
 		private bool visible;
+		/// <summary>
+		/// Позиція шару на робочій поверхні.
+		/// </summary>
 		private Point location;
-		public Point Location { get => location; set => location = value; }
-
+		/// <summary>
+		/// Дані про фігуру, яка міститься в шарі.
+		/// </summary>
+		private TShape shape;
+		/// <summary>
+		/// Дані про текст, який міститься в шарі.
+		/// </summary>
+		private TextArgs text;
+		/// <summary>
+		/// Властивість для роботи із зображенням шару.
+		/// </summary>
 		public Bitmap Image 
 		{ 
+			/// Повертає зображення шару.
 			get => layerImage; 
+			/// Присвоює значення шару, при цьому, можливо, змінюючи його розмір та перестворюючи об'єкт Graphics.
 			set
 			{
 				layerImage.Dispose();
@@ -38,15 +62,30 @@ namespace dotnetpaint
 				layerSize = layerImage.Size;
 			}
 		}
-
+		/// <summary>
+		/// Дозволяє отримати об'єкт Graphics для роботи із шаром.
+		/// </summary>
 		public Graphics Graphics { get => layerGraphics; }
+		/// <summary>
+		/// Властивість для присвоювання або отримання імені шару.
+		/// </summary>
 		public string Name { get => layerName; set => layerName = value; }
+		/// <summary>
+		/// Властивість для присвоювання або отримання мітки видимості шару.
+		/// </summary>
 		public bool Visible { get => visible; set => visible = value; }
-
+		/// <summary>
+		/// Властивість, що дозволяє змінювати режим композиції об'єкту Graphics цього шару.
+		/// </summary>
 		public CompositingMode Compositing { get => layerGraphics.CompositingMode; set => layerGraphics.CompositingMode = value; }
+		/// <summary>
+		/// Властивість для роботи із розміром шару.
+		/// </summary>
 		public Size LayerSize 
 		{ 
+			/// Повертає розмір шару.
 			get => layerSize;
+			/// Змінює розмір шару, із зміною розміру зображення.
 			set
 			{
 				layerSize = value;
@@ -59,9 +98,14 @@ namespace dotnetpaint
 				layerGraphics = newgrphcs;
 			}
 		}
+		/// <summary>
+		/// Властивість для роботи із шириною шару.
+		/// </summary>
 		public int Width 
 		{ 
+			/// Повертає ширину шару.
 			get => layerSize.Width; 
+			/// Присвоює нову ширину шару, із зміною розміру зображення.
 			set
 			{
 				layerSize.Width = value;
@@ -74,9 +118,14 @@ namespace dotnetpaint
 				layerGraphics = newgrphcs;
 			}
 		}
+		/// <summary>
+		/// Властивість для роботи із висотою шару.
+		/// </summary>
 		public int Height 
-		{ 
+		{
+			/// Повертає висоту шару.
 			get => layerSize.Height;
+			/// Присвоює нову висоту шару, із зміною розміру зображення.
 			set
 			{
 				layerSize.Height = value;
@@ -89,28 +138,30 @@ namespace dotnetpaint
 				layerGraphics = newgrphcs;
 			}
 		}
-		[NonSerialized]
-		private TShape shape;
+		/// <summary>
+		/// Властивість для роботи із позицією шару на робочій поверхні.
+		/// </summary>
+		public Point Location { get => location; set => location = value; }
+		/// <summary>
+		/// Властивість для роботи із фігурою шару.
+		/// </summary>
 		public TShape Shape { get => shape; set => shape = value; }
-		[NonSerialized]
-		private TextArgs text;
+		/// <summary>
+		/// Властивість для роботи із текстом шару.
+		/// </summary>
 		public TextArgs Text { get => text; set => text = value; }
-
 		// ===================================
 		public Layer(Size _layerSize, string name)
 		{
 			layerImage = new Bitmap(_layerSize.Width, _layerSize.Height);
 			layerGraphics = Graphics.FromImage(layerImage);
-
 			layerGraphics.SmoothingMode = SmoothingMode.AntiAlias;
 			layerGraphics.Clear(Color.Transparent);
-
 			layerSize = _layerSize;
 			layerName = name;
 			visible = true;
 			shape = null;
 			text = null;
-
 			location = Point.Empty;
 		}
 
@@ -129,6 +180,9 @@ namespace dotnetpaint
 
 			location = Point.Empty;
 		}
+		/// <summary>
+		/// Конструкрот десеріалізації об'єкту шару.
+		/// </summary>
 		public Layer(SerializationInfo info, StreamingContext context)
 		{
 			Bitmap temp = (Bitmap)info.GetValue("image", typeof(Bitmap));
@@ -143,20 +197,14 @@ namespace dotnetpaint
 			visible = (bool)info.GetValue("visible", typeof(bool));
 			location = (Point)info.GetValue("location", typeof(Point));
 
-			//for now
-			shape = null;
 			text = (TextArgs)info.GetValue("textArgs", typeof(TextArgs));
 			shape = (TShape)info.GetValue("shape", typeof(TShape));
 			if (shape != null)
 				shape.Tool.ToolLayer = this;
 		}
-		//[OnDeserialized]
-		//private void SetValuesOnDeserialized(StreamingContext context)
-		//{
-		//	//allLayers = new List<Layer>();
-
-
-		//}
+		/// <summary>
+		/// Серіалізація шару.
+		/// </summary>
 		void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
 		{
 			info.AddValue("image", layerImage, typeof(Bitmap));
@@ -178,6 +226,9 @@ namespace dotnetpaint
 			if (layerImage != null)
 				layerImage.Dispose();
 		}
+		/// <summary>
+		/// Метод, який обновлює зображення шару при наявності даних фігури або тексту.
+		/// </summary>
 		public void RefreshContents()
 		{
 			layerGraphics.Clear(Color.Transparent);
@@ -191,7 +242,5 @@ namespace dotnetpaint
 				Graphics.DrawString(text.Text, text.Font, text.Brush, text.Location);
 			}
 		}
-
-
 	}
 }

@@ -132,7 +132,7 @@
             this.DrawSurfPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.DrawSurfPanel.Location = new System.Drawing.Point(4, 60);
             this.DrawSurfPanel.Name = "DrawSurfPanel";
-            this.DrawSurfPanel.Size = new System.Drawing.Size(913, 583);
+            this.DrawSurfPanel.Size = new System.Drawing.Size(912, 583);
             this.DrawSurfPanel.TabIndex = 4;
             // 
             // DrawingBox
@@ -167,7 +167,7 @@
             this.MainTableLayout.ColumnCount = 3;
             this.MainTableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 58F));
             this.MainTableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.MainTableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 273F));
+            this.MainTableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 274F));
             this.MainTableLayout.Controls.Add(this.ToolsStrip, 0, 0);
             this.MainTableLayout.Controls.Add(this.RightLayoutPanel, 2, 0);
             this.MainTableLayout.Controls.Add(this.DrawingPlusToolsPanel, 1, 0);
@@ -357,13 +357,13 @@
             this.RightLayoutPanel.Controls.Add(this.LayersGroupBox, 0, 1);
             this.RightLayoutPanel.Controls.Add(this.panel3, 0, 0);
             this.RightLayoutPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.RightLayoutPanel.Location = new System.Drawing.Point(991, 4);
+            this.RightLayoutPanel.Location = new System.Drawing.Point(990, 4);
             this.RightLayoutPanel.Name = "RightLayoutPanel";
             this.RightLayoutPanel.RowCount = 2;
             this.RightLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
             this.RightLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 463F));
             this.RightLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.RightLayoutPanel.Size = new System.Drawing.Size(267, 647);
+            this.RightLayoutPanel.Size = new System.Drawing.Size(268, 647);
             this.RightLayoutPanel.TabIndex = 6;
             // 
             // LayersGroupBox
@@ -372,7 +372,7 @@
             this.LayersGroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.LayersGroupBox.Location = new System.Drawing.Point(4, 65);
             this.LayersGroupBox.Name = "LayersGroupBox";
-            this.LayersGroupBox.Size = new System.Drawing.Size(259, 578);
+            this.LayersGroupBox.Size = new System.Drawing.Size(260, 578);
             this.LayersGroupBox.TabIndex = 0;
             this.LayersGroupBox.TabStop = false;
             this.LayersGroupBox.Text = "Layers";
@@ -390,8 +390,9 @@
             this.LayersTreeView.LabelEdit = true;
             this.LayersTreeView.Location = new System.Drawing.Point(3, 16);
             this.LayersTreeView.Name = "LayersTreeView";
-            this.LayersTreeView.Size = new System.Drawing.Size(253, 559);
+            this.LayersTreeView.Size = new System.Drawing.Size(254, 559);
             this.LayersTreeView.TabIndex = 0;
+            this.LayersTreeView.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.LayersTreeView_AfterLabelEdit);
             this.LayersTreeView.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.LayersTreeView_AfterCheck);
             this.LayersTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.LayersTreeView_AfterSelect);
             // 
@@ -401,7 +402,7 @@
             this.panel3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel3.Location = new System.Drawing.Point(4, 4);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(259, 54);
+            this.panel3.Size = new System.Drawing.Size(260, 54);
             this.panel3.TabIndex = 2;
             // 
             // LayerControlsGroupBox
@@ -413,7 +414,7 @@
             this.LayerControlsGroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.LayerControlsGroupBox.Location = new System.Drawing.Point(0, 0);
             this.LayerControlsGroupBox.Name = "LayerControlsGroupBox";
-            this.LayerControlsGroupBox.Size = new System.Drawing.Size(259, 54);
+            this.LayerControlsGroupBox.Size = new System.Drawing.Size(260, 54);
             this.LayerControlsGroupBox.TabIndex = 3;
             this.LayerControlsGroupBox.TabStop = false;
             this.LayerControlsGroupBox.Text = "Layer controls";
@@ -479,7 +480,7 @@
             this.DrawingPlusToolsPanel.RowCount = 2;
             this.DrawingPlusToolsPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 55F));
             this.DrawingPlusToolsPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.DrawingPlusToolsPanel.Size = new System.Drawing.Size(921, 647);
+            this.DrawingPlusToolsPanel.Size = new System.Drawing.Size(920, 647);
             this.DrawingPlusToolsPanel.TabIndex = 7;
             // 
             // flowLayoutPanel1
@@ -493,7 +494,7 @@
             this.flowLayoutPanel1.Controls.Add(this.TextGB);
             this.flowLayoutPanel1.Location = new System.Drawing.Point(4, 4);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(913, 49);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(912, 49);
             this.flowLayoutPanel1.TabIndex = 5;
             // 
             // ToolParametersPanel
@@ -808,7 +809,7 @@
             this.ImageProjButton,
             this.FileProjButton});
             this.newProjectToolStripMenuItem.Name = "newProjectToolStripMenuItem";
-            this.newProjectToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.newProjectToolStripMenuItem.Size = new System.Drawing.Size(147, 22);
             this.newProjectToolStripMenuItem.Text = "New project...";
             // 
             // BlankProjButton
@@ -839,20 +840,20 @@
             // 
             this.LoadImageButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.LoadImageButton.Name = "LoadImageButton";
-            this.LoadImageButton.Size = new System.Drawing.Size(180, 22);
+            this.LoadImageButton.Size = new System.Drawing.Size(147, 22);
             this.LoadImageButton.Text = "Load image";
             this.LoadImageButton.Click += new System.EventHandler(this.LoadImageButton_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(144, 6);
             // 
             // SaveFileButton
             // 
             this.SaveFileButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.SaveFileButton.Name = "SaveFileButton";
-            this.SaveFileButton.Size = new System.Drawing.Size(180, 22);
+            this.SaveFileButton.Size = new System.Drawing.Size(147, 22);
             this.SaveFileButton.Text = "Save";
             this.SaveFileButton.Click += new System.EventHandler(this.SaveFileButton_Click);
             // 
@@ -866,54 +867,54 @@
             this.SaveTiffButton,
             this.dATFileToolStripMenuItem});
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(147, 22);
             this.saveAsToolStripMenuItem.Text = "Save as...";
             // 
             // SavePngButton
             // 
             this.SavePngButton.Name = "SavePngButton";
-            this.SavePngButton.Size = new System.Drawing.Size(180, 22);
+            this.SavePngButton.Size = new System.Drawing.Size(114, 22);
             this.SavePngButton.Text = "PNG";
             this.SavePngButton.Click += new System.EventHandler(this.SavePngButton_Click);
             // 
             // SaveJpgButton
             // 
             this.SaveJpgButton.Name = "SaveJpgButton";
-            this.SaveJpgButton.Size = new System.Drawing.Size(180, 22);
+            this.SaveJpgButton.Size = new System.Drawing.Size(114, 22);
             this.SaveJpgButton.Text = "JPG";
             this.SaveJpgButton.Click += new System.EventHandler(this.SaveJpgButton_Click);
             // 
             // SaveBmpButton
             // 
             this.SaveBmpButton.Name = "SaveBmpButton";
-            this.SaveBmpButton.Size = new System.Drawing.Size(180, 22);
+            this.SaveBmpButton.Size = new System.Drawing.Size(114, 22);
             this.SaveBmpButton.Text = "BMP";
             this.SaveBmpButton.Click += new System.EventHandler(this.SaveBmpButton_Click);
             // 
             // SaveTiffButton
             // 
             this.SaveTiffButton.Name = "SaveTiffButton";
-            this.SaveTiffButton.Size = new System.Drawing.Size(180, 22);
+            this.SaveTiffButton.Size = new System.Drawing.Size(114, 22);
             this.SaveTiffButton.Text = "TIFF";
             this.SaveTiffButton.Click += new System.EventHandler(this.SaveTiffButton_Click);
             // 
             // dATFileToolStripMenuItem
             // 
             this.dATFileToolStripMenuItem.Name = "dATFileToolStripMenuItem";
-            this.dATFileToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.dATFileToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
             this.dATFileToolStripMenuItem.Text = "DAT file";
             this.dATFileToolStripMenuItem.Click += new System.EventHandler(this.dATFileToolStripMenuItem_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(144, 6);
             // 
             // QuitButton
             // 
             this.QuitButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.QuitButton.Name = "QuitButton";
-            this.QuitButton.Size = new System.Drawing.Size(180, 22);
+            this.QuitButton.Size = new System.Drawing.Size(147, 22);
             this.QuitButton.Text = "Quit";
             this.QuitButton.Click += new System.EventHandler(this.QuitButton_Click);
             // 
@@ -928,7 +929,7 @@
             // ResizeProjButton
             // 
             this.ResizeProjButton.Name = "ResizeProjButton";
-            this.ResizeProjButton.Size = new System.Drawing.Size(180, 22);
+            this.ResizeProjButton.Size = new System.Drawing.Size(166, 22);
             this.ResizeProjButton.Text = "Resize the project";
             this.ResizeProjButton.Click += new System.EventHandler(this.ResizeProjButton_Click);
             // 

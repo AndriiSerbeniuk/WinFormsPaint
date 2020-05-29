@@ -1,31 +1,67 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Runtime.Serialization;
 
 namespace dotnetpaint
 {
+	/// <summary>
+	/// Клас проекту, який містить шари із зображеннями, які накладаються одне на одного.
+	/// </summary>
 	[Serializable()]
 	class Project : ISerializable
 	{
-		// Attributes
-		private List<Layer> allLayers;
+		// Атрибути
+		/// <summary>
+		/// Всі шари проекту.
+		/// </summary>
+		private List<Layer> layers;
+		/// <summary>
+		/// Поточний обраний шар.
+		/// </summary>
 		private Layer selectedLayer;
+		/// <summary>
+		/// Індекс обраного шару.
+		/// </summary>
 		private int selectedLayerIndex;
+		/// <summary>
+		/// Шари, шо знаходять під обраним, у вигляді об'єднаного зображення.
+		/// </summary>
 		private Bitmap lowerLayers;
+		/// <summary>
+		/// Шари, шо знаходять над обраним, у вигляді об'єднаного зображення.
+		/// </summary>
 		private Bitmap upperLayers;
-		private Size projectSize;
+		/// <summary>
+		/// Розмір проекту
+		/// </summary>
+		private Size size;
+		/// <summary>
+		/// Режим композиції усіх шарів проекту.
+		/// </summary>
 		private CompositingMode compositingMode;
 
-		// Properties
-		public List<Layer> AllLayers { get => allLayers; set => allLayers = value; }
+		// Властивості
+		/// <summary>
+		/// Властивість для роботи із усіма шарами проекту.
+		/// </summary>
+		public List<Layer> Layers { get => layers; set => layers = value; }
+		/// <summary>
+		/// Властивість для отримання із вибраним шаром проекту.
+		/// </summary>
 		public Layer SelectedLayer { get => selectedLayer; }
+		/// <summary>
+		/// Властивість для отримання із зображенням шарів над обраним.
+		/// </summary>
 		public Bitmap UpperLayers { get => upperLayers; }
-		public Bitmap LowerLayers { get => lowerLayers;  }
+		/// <summary>
+		/// Властивість для отримання із зображенням шарів під обраним.
+		/// </summary>
+		public Bitmap LowerLayers { get => lowerLayers; }
+		/// <summary>
+		/// Властивість для роботи із зображенням шарів над обраним.
+		/// </summary>
 		public CompositingMode Compositing 
 		{ 
 			get => compositingMode; 
@@ -34,116 +70,135 @@ namespace dotnetpaint
 				if (value != compositingMode)
 				{
 					compositingMode = value;
-					foreach (Layer l in allLayers)
+					foreach (Layer l in layers)
 						l.Compositing = value;
 				}
 			}
 		}
+		/// <summary>
+		/// Властивість для роботи із індексом обраного шару.
+		/// </summary>
 		public int SelectedLayerIndex 
 		{ 
 			get => selectedLayerIndex; 
 			set => SelectLayer(value);   
 		}
+		/// <summary>
+		/// Властивість для роботи із розміром проекту.
+		/// </summary>
 		public Size Size 
 		{ 
-			get => projectSize;
+			get => size;
 			set
 			{
-				projectSize = value;
-				foreach(Layer l in allLayers)
+				size = value;
+				foreach(Layer l in layers)
 				{
 					l.LayerSize = value;
 				}
 			}
 		}
-		public int Width { get => projectSize.Width; }
-		public int Height { get => projectSize.Height; }
+		/// <summary>
+		/// Властивість для роботи із шириною проекту.
+		/// </summary>
+		public int Width { get => size.Width; }
+		/// <summary>
+		/// Властивість для роботи із висотою проекту.
+		/// </summary>
+		public int Height { get => size.Height; }
 
-		// ============ Constructors ==============
+		// ============ Конструктори ==============
 		public Project(Size projSize)
 		{
-			allLayers = new List<Layer>(0);
+			layers = new List<Layer>(0);
 			lowerLayers = null;
 			upperLayers = null;
 			selectedLayer = null;
 			selectedLayerIndex = -1;
-			projectSize = projSize;         
+			size = projSize;         
 		}
-
+		/// <summary>
+		/// Конструктор десеріалізації.
+		/// </summary>
 		public Project(SerializationInfo info, StreamingContext context)
 		{
-			allLayers = (List<Layer>)info.GetValue("layers", typeof(List<Layer>));
+			layers = (List<Layer>)info.GetValue("layers", typeof(List<Layer>));
 			//Layer[] layers = (Layer[])info.GetValue("layers", typeof(Layer[]));
 			//allLayers = new List<Layer>(layers);
-			projectSize = (Size)info.GetValue("size", typeof(Size));
+			size = (Size)info.GetValue("size", typeof(Size));
 			//SelectLayer(allLayers.Count - 1);
 			Compositing = CompositingMode.SourceOver;
 		}
-
-		//[OnDeserialized]
-		//private void SetValuesOnDeserialized(StreamingContext context)
-		//{
-		//	//allLayers = new List<Layer>();
-
-
-		//}
-
+		/// <summary>
+		/// Метод для серіалізації проекту.
+		/// </summary>
 		void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
 		{
-			info.AddValue("layers", allLayers, typeof(List<Layer>));
+			info.AddValue("layers", layers, typeof(List<Layer>));
 			//Layer[] layers = allLayers.ToArray();
 			//info.AddValue("layers", layers, typeof(Layer[]));
-			info.AddValue("size", projectSize, typeof(Size));
+			info.AddValue("size", size, typeof(Size));
 		}
-
 		~Project()
 		{
-			allLayers.Clear();
+			if (layers != null)
+				layers.Clear();
 			if (lowerLayers != null)
 				lowerLayers.Dispose();
 			if (upperLayers != null)
 				upperLayers.Dispose();
 		}
-
-		// ============= Methods =======================
+		// ============= Методи =======================
+		/// <summary>
+		/// Поєднання усіх шарів проекту в одне хображення.
+		/// </summary>
+		/// <param name="DrawTo">Шар, в який буде поміщено результат.</param>
 		public void GetFinalImage(Layer DrawTo)
 		{
+			// Незалежно від кількості шарів завжди буде малюватись тільки 3 зображення для поєднання їх всіх.
+			// Зображення шарів під вибраним робочим шаром.
 			if (lowerLayers != null)
 				DrawTo.Graphics.DrawImage(lowerLayers, 0, 0);
+			// Сам робочий шар.
 			if (selectedLayer != null && selectedLayer.Image != null && selectedLayer.Visible)
 				DrawTo.Graphics.DrawImage(selectedLayer.Image, selectedLayer.Location.X, selectedLayer.Location.Y, selectedLayer.Width, selectedLayer.Height);
+			// Та зображення шарів над робочим шаром.
 			if (upperLayers != null)
 				DrawTo.Graphics.DrawImage(upperLayers, 0, 0);
 		}
-
-
+		/// <summary>
+		/// Обрати робочий шар із шарів проекту.
+		/// Спричиняє IndexOutOfRangeException при неправильному індексі шару.
+		/// </summary>
+		/// <param name="index">Індекс шару для вибору.</param>
+		/// <returns>Повертає новообраний шар.</returns>
 		public Layer SelectLayer(int index) 
 		{
-			if (index < 0 || index >= allLayers.Count)
+			if (index < 0 || index >= layers.Count)
 				throw new IndexOutOfRangeException();
 			else
 			{
 				selectedLayerIndex = index;
-				selectedLayer = allLayers[index];
-				
+				selectedLayer = layers[index];
+				// При виборі нового шару порібно перевірити заново, які шари над ним, а які під.
 				SetLowerLayers();
 				SetUpperLayers();
-				return allLayers[selectedLayerIndex];
+				return layers[selectedLayerIndex];
 			}
 		}
-
+		/// <summary>
+		/// Об'єднує усі шари під вибраним в одне зображення.
+		/// </summary>
 		private void SetLowerLayers()
 		{
 			if (selectedLayerIndex > 0)
 			{
-				if (lowerLayers == null)
-					lowerLayers = new Bitmap(projectSize.Width, projectSize.Height);
+				lowerLayers = new Bitmap(size.Width, size.Height);
 				Graphics g = Graphics.FromImage(lowerLayers);
 				g.Clear(Color.Transparent);
 				for (int i = 0; i < selectedLayerIndex; i++)
-					if (allLayers[i].Visible)
-						g.DrawImage(allLayers[i].Image, allLayers[i].Location.X, allLayers[i].Location.Y, allLayers[i].LayerSize.Width, allLayers[i].LayerSize.Height);
-						//g.DrawImage(allLayers[i].Image, allLayers[i].Location.X, allLayers[i].Location.Y);
+					if (layers[i].Visible)
+						g.DrawImage(layers[i].Image, layers[i].Location.X, layers[i].Location.Y, layers[i].LayerSize.Width, layers[i].LayerSize.Height);
 
 			}
 			else if (lowerLayers != null)
@@ -152,19 +207,19 @@ namespace dotnetpaint
 				lowerLayers = null;
 			}
 		}
-
+		/// <summary>
+		/// Об'єднує усі шари над вибраним в одне зображення.
+		/// </summary>
 		private void SetUpperLayers()
 		{
-			if (selectedLayerIndex < allLayers.Count - 1)
+			if (selectedLayerIndex < layers.Count - 1)
 			{
-				if (upperLayers == null)
-					upperLayers = new Bitmap(projectSize.Width, projectSize.Height);
+				upperLayers = new Bitmap(size.Width, size.Height);
 				Graphics g = Graphics.FromImage(upperLayers);
 				g.Clear(Color.Transparent);
-				for (int i = selectedLayerIndex + 1; i < allLayers.Count; i++)
-					if (allLayers[i].Visible)
-						g.DrawImage(allLayers[i].Image, allLayers[i].Location.X, allLayers[i].Location.Y, allLayers[i].LayerSize.Width, allLayers[i].LayerSize.Height);
-						//g.DrawImage(allLayers[i].Image, allLayers[i].Location.X, allLayers[i].Location.Y);
+				for (int i = selectedLayerIndex + 1; i < layers.Count; i++)
+					if (layers[i].Visible)
+						g.DrawImage(layers[i].Image, layers[i].Location.X, layers[i].Location.Y, layers[i].LayerSize.Width, layers[i].LayerSize.Height);
 			}
 			else if(upperLayers != null)
 			{
@@ -172,32 +227,48 @@ namespace dotnetpaint
 				upperLayers = null;
 			}
 		}
-
+		/// <summary>
+		/// Додає новий шар із заданим ім'ям в проект.
+		/// </summary>
+		/// <param name="name">Ім'я шару.</param>
 		public void AddLayer(string name)
 		{
-			allLayers.Add(new Layer(Size, name));
-			if (allLayers.Count == 1)
+			layers.Add(new Layer(Size, name));
+			if (layers.Count == 1)
 				SelectLayer(0);
 		}
-		public void AddLayer(Layer layer, string name)
+		/// <summary>
+		/// Додає новий шар в проект.
+		/// </summary>
+		/// <param name="layer">Шар, який потрібно додати.</param>
+		public void AddLayer(Layer layer)
 		{
-			allLayers.Add(layer);
-			if (allLayers.Count == 1)
+			layers.Add(layer);
+			if (layers.Count == 1)
 				SelectLayer(0);
 		}
-
+		/// <summary>
+		/// Видаляє шар із заданим індексом із проекту.
+		/// </summary>
+		/// <param name="index">Індекс шару для видалення.</param>
 		public void RemoveLayer(int index)
 		{
-			allLayers.RemoveAt(index); 
+			if (index >= 0 && index < layers.Count)
+				layers.RemoveAt(index); 
 		}
-
+		/// <summary>
+		/// Міняє два шари проекту місцями.
+		/// </summary>
+		/// <param name="ind1">Індекс першого шару.</param>
+		/// <param name="ind2">Індекс другого шару.</param>
 		public void SwapLayers(int ind1, int ind2)
 		{
-			Layer temp = allLayers[ind1];
-			allLayers[ind1] = allLayers[ind2];
-			allLayers[ind2] = temp;
+			if (ind1 >= 0 && ind1 < layers.Count && ind2 >= 0 && ind2 < layers.Count)
+			{
+				Layer temp = layers[ind1];
+				layers[ind1] = layers[ind2];
+				layers[ind2] = temp;
+			}
 		}
-
-		
 	}
 }

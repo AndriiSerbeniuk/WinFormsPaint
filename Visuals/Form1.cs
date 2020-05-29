@@ -1,45 +1,50 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 
-
 namespace dotnetpaint
 {
+	/// <summary>
+	/// Перелічення, що містить усі можливі використання інструментів програми.
+	/// </summary>
 	public enum ToolUse { Draw, Shape, Transform };
 
+	/// <summary>
+	/// Головне вікно програми.
+	/// </summary>
 	public partial class Courseach : Form
 	{
+		/// Мітка, яка позначає, що кнопка мишки натиснута
 		private bool DBMouseDown;
+		/// Мітка, яка позначає, що шари можна модифікувати
 		private bool ModifyLayers;
+		/// Перелічення, яке позначає, яку функцію виконує поточний інструмент
 		private ToolUse CurUse;
+		/// Перелічення, яке позначає, яку функцію виконував попередній інструмент
 		private ToolUse PrevUse;
-
+		/// Буфер зображення, щоб при оновленні поверхні малювання не було підмигувань
 		private Layer BufferLayer;
-
+		/// Поточний проект
 		private Project project;
-
+		/// Усі доступні інструменти
 		private ToolBase[] Tools;
+		/// Поточний інструмент
 		private ToolBase CurrentTool;
+		/// Останній використаний інструмент для малювання фігури
 		private ToolBase LastShapeTool;
+		/// Попередній інструмент
 		private ToolBase PrevTool;
-
+		/// Кнопка, яка відповідає за останній обраний інструмент
 		private ToolStripItem LastUsedButton;
-
+		/// Шлях для збереження проекту у dat файл
 		private string SavePath;
-
+		/// <summary>
+		/// Конструктор, який присвоює атрибутам деякі значення за замовчуванням.
+		/// </summary>
 		public Courseach()
 		{
 			InitializeComponent();
@@ -47,15 +52,15 @@ namespace dotnetpaint
 			ModifyLayers = true;
 
 			Tools = new ToolBase[9];
-			Tools[0] = new BrushTool();                     // Brush
-			Tools[1] = new BrushTool(Color.Transparent, 5); // Eraser
-			Tools[2] = new LineTool();                      // Line tool
-			Tools[3] = new RectangleTool();                 // Rectangle tool
-			Tools[4] = new EllipseTool();                   // Ellipse tool
-			Tools[5] = new MoveTool();                      // Affine translation tool
-			Tools[6] = new TextInitTool();                  // Text initialisation tool
-			Tools[7] = new PipetteTool();                   // Color copy from image for primary color
-			Tools[8] = new PipetteTool();                   // Color copy from image for fill color
+			Tools[0] = new BrushTool();                     // Пензлик
+			Tools[1] = new BrushTool(Color.Transparent, 5); // Стирачка - пензлик, що малює прозорим кольором із заміною поточного кольору.
+			Tools[2] = new LineTool();                      // Інструмент лінії
+			Tools[3] = new RectangleTool();                 // Інструмент прямокутника
+			Tools[4] = new EllipseTool();                   // Інструмент еліпса
+			Tools[5] = new MoveTool();                      // Інструмент для переміщення шару
+			Tools[6] = new TextInitTool();                  // Інструмент ініціалізації тексту
+			Tools[7] = new PipetteTool();                   // Піпетка для визначення основного кольору
+			Tools[8] = new PipetteTool();                   // Піпетка для визначення кольору заливки фігури
 
 			CurrentTool = Tools[0];
 			CurUse = ToolUse.Draw;
@@ -71,9 +76,13 @@ namespace dotnetpaint
 			DrawingBox.Refresh();
 		}
 
-		// ========== Project creation and saving ========================
+		// ========== Завантаження та збереження проекту ========================
+		/// <summary>
+		/// Подія кнопки, що відповідає за створення пустого проекту.
+		/// </summary>
 		private void BlankProjButton_Click(object sender, EventArgs e)
 		{
+			// Діалог для введення розміру проекту
 			ProjectCreationWindow d = new ProjectCreationWindow();
 			if (d.ShowDialog() == DialogResult.OK)
 			{
@@ -81,8 +90,9 @@ namespace dotnetpaint
 			}
 			d.Dispose();
 		}
-
-		
+		/// <summary>
+		/// Подія кнопки, що відповідає за створення нового проекту на основі зображення з пристрою.
+		/// </summary>
 		private void ImageProjButton_Click(object sender, EventArgs e)
 		{
 			OpenFileDialog d = new OpenFileDialog();
@@ -102,6 +112,9 @@ namespace dotnetpaint
 
 			d.Dispose();
 		}
+		/// <summary>
+		/// Подія кнопки, що відповідає за завантаження існуючого проекту із файлу на пристрої.
+		/// </summary>
 		private void FileProjButton_Click(object sender, EventArgs e)
 		{
 			OpenFileDialog d = new OpenFileDialog();
@@ -113,16 +126,14 @@ namespace dotnetpaint
 					BinaryFormatter formatter = new BinaryFormatter();
 					using (FileStream fs = new FileStream(d.FileName, FileMode.Open))
 					{
-						// In case a project already exists we should save it first
+						// Якщо в програмі уже відкритий проект його варто зберегти.
 						Project temp = (Project)formatter.Deserialize(fs);
 						if (project != null)
 							SaveIntoFile(SavePath);
 						project = temp;
-						project.SelectLayer(project.AllLayers.Count - 1);
+						project.SelectLayer(project.Layers.Count - 1);
 						SavePath = d.FileName;
-
-						// Clear visual representation of prevoius project
-						LayersTreeView.Nodes.Clear();
+						LayersTreeView.Nodes.Clear();	// Очищення елементів форми, які відображають шари попереднього проекту
 						InitProject();
 						DrawingBox.Refresh();
 						MessageBox.Show("Project loaded successfully.", "Success!");
@@ -140,16 +151,18 @@ namespace dotnetpaint
 
 			d.Dispose();
 		}
-
+		/// <summary>
+		/// Відповідає за підготовку усіх потрібних для роботи елементів програми, з врахунком на те, що проект уже завантажений у програму із файлу.
+		/// </summary>
 		private void InitProject()
 		{
 			BufferLayer = new Layer(project.Size);
 			DrawingBox.Location = Point.Empty;
 			CountDrawingBoxSize();
 
-			// Add all the new layers into LayersTreeView for the user to see
-			ModifyLayers = false;
-			foreach (Layer l in project.AllLayers)
+			// Додавання усіх шарів проекту в елемент форми, який їх відображає
+			ModifyLayers = false;	// Тимчасово відключити модифікацію шарів
+			foreach (Layer l in project.Layers)
 			{
 				LayersTreeView.Nodes.Add(l.Name);
 				LayersTreeView.Nodes[LayersTreeView.Nodes.Count - 1].Checked = l.Visible;
@@ -174,15 +187,18 @@ namespace dotnetpaint
 			ToolParametersPanel.Visible = true;
 			LayerSizePanel.Visible = true;
 		}
-
+		/// <summary>
+		/// Підраховує розмір та пропорції робочої поверхні на основі розмірів проекту.
+		/// </summary>
 		private void CountDrawingBoxSize()
 		{
 			Point newLoc = Point.Empty;
-			// Relation of project width / height
+			// Відношення ширини проекту до його висоти.
 			float PR = (float)project.Width / project.Height;
-			// Relation of drawing surface width / height
+			// Відношення ширини робочої поверхні до її висоти.
 			float DR = (float)DrawSurfPanel.Width / DrawSurfPanel.Height;
-			if (PR < DR)
+			// Залежно від значень цих відношень розмір робочої поверхні потрібно маштабувати по різному, щоб вона повністю помістилась на екрані.
+			if (PR < DR)	
 			{
 				DrawingBox.Height = DrawSurfPanel.Height;
 				DrawingBox.Width = (int)(PR * (DrawSurfPanel.Height));
@@ -196,29 +212,46 @@ namespace dotnetpaint
 			}
 			DrawingBox.Location = newLoc;
 		}
-
+		/// <summary>
+		/// Відповідає за підготовку усіх потрібних для роботи елементів програми, створює проект.
+		/// </summary>
+		/// <param name="projSize">Розмір нового проекту.</param>
 		private void InitProject(Size projSize)
 		{
+			// Якщо в програмі уже відкритий проект - його варто зберегти.
 			if (project != null)
 			{
 				SaveIntoFile(SavePath);
 				LayersTreeView.Nodes.Clear();
 			}
-
+			// Створення нового проекту, підготовка буфера та робочої поверхні
 			project = new Project(projSize);
 			BufferLayer = new Layer(projSize);
 			CountDrawingBoxSize();
-
+			// Додавання початкового білого шару
 			AddLayer("Background");
-			project.AllLayers[0].Graphics.FillRectangle(new SolidBrush(Color.White), 0, 0, project.Width, project.Height);
-
+			project.Layers[0].Graphics.FillRectangle(new SolidBrush(Color.White), 0, 0, project.Width, project.Height);
+			// Вибір цього шару та активація елементів інтерфейсу для роботи
 			LayersTreeView.SelectedNode = LayersTreeView.Nodes[0];
 			AddLayerButton.Enabled = true;
 			ToolParametersPanel.Visible = true;
 			LayerSizePanel.Visible = true;
 			DrawingBox.Refresh();
 		}
-
+		/// <summary>
+		/// Відповідає за підготовку усіх потрібних для роботи елементів програми, створює проект на основі зображення.
+		/// </summary>
+		/// <param name="img">Зображення, яке стане основою проекту.</param>
+		private void InitProject(Bitmap img)
+		{
+			InitProject(img.Size);
+			project.SelectedLayer.Image = img;
+			DrawingBox.Refresh();
+		}
+		/// <summary>
+		/// Збереження проекту у файл зі розширенням зображення.
+		/// </summary>
+		/// <param name="format">Бажаний формат збереженого зображення, однак якщо в діалозі ввести назву файлу із іншим розширенням, буде використане воно.</param>
 		private void SaveIntoImage(string format)
 		{
 			SaveFileDialog d = new SaveFileDialog
@@ -227,68 +260,88 @@ namespace dotnetpaint
 				DefaultExt = format
 			};
 
-			if (d.ShowDialog() == DialogResult.OK)
+			try
 			{
-				BufferLayer.Image.Save(d.FileName);
-
-				MessageBox.Show("File created successfully!", "File created");
+				if (d.ShowDialog() == DialogResult.OK)
+				{
+					BufferLayer.Image.Save(d.FileName);
+					MessageBox.Show("File created successfully!", "File created");
+				}
+			}
+			catch (Exception)
+			{
+				MessageBox.Show("Something went wrong while saving the project.", "Error");
 			}
 
 			d.Dispose();
 		}
+		/// <summary>
+		/// Подія кнопки, яка відповідає за збереження проекту в зображення формату PNG.
+		/// </summary>
 		private void SavePngButton_Click(object sender, EventArgs e)
 		{
 			if (project != null)
 				SaveIntoImage("png");
 		}
+		/// <summary>
+		/// Подія кнопки, яка відповідає за збереження проекту в зображення формату JPG.
+		/// </summary>
 		private void SaveJpgButton_Click(object sender, EventArgs e)
 		{
 			if (project != null)
 				SaveIntoImage("jpg");
 		}
+		/// <summary>
+		/// Подія кнопки, яка відповідає за збереження проекту в зображення формату BMP.
+		/// </summary>
 		private void SaveBmpButton_Click(object sender, EventArgs e)
 		{
 			if (project != null)
 				SaveIntoImage("bmp");
 		}
+		/// <summary>
+		/// Подія кнопки, яка відповідає за збереження проекту в зображення формату TIFF.
+		/// </summary>
 		private void SaveTiffButton_Click(object sender, EventArgs e)
 		{
 			if (project != null)
 				SaveIntoImage("tiff");
 		}
+		/// <summary>
+		/// Подія кнопки, яка відповідає за збереження проекту у файл із розширенням DAT.
+		/// </summary>
 		private void dATFileToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (project != null)
 				SaveIntoFile(null);
 		}
-		private void InitProject(Bitmap img)
-		{
-			InitProject(img.Size);
-			project.SelectedLayer.Image = img;
-			DrawingBox.Refresh();
-		}
-
+		/// <summary>
+		/// Відповідає за збереження проекту у файл із розширенням DAT.
+		/// </summary>
+		/// <param name="path">Шлях для збереження файлу.</param>
 		private void SaveIntoFile(string path)
 		{
-			// Binary formater is used to serialise the project
+			// BinaryFormatter використовується для серіалізації проекту
 			BinaryFormatter formatter = new BinaryFormatter();
-			// Dialog to get the path to save file
+			// Діалог щоб отримати шлях до нього
 			SaveFileDialog d = new SaveFileDialog
 			{
 				DefaultExt = "dat"
 			};
-
+			// Якщо переданий у метод шлях не існує - визначимо його тут.
 			if (path == null && d.ShowDialog() == DialogResult.OK)
 			{
 				path = d.FileName;
+				// Та збережемо в атрибут, який зберігає шлях до поточного проекту.
 				SavePath = path;
 			}
 			d.Dispose();
-
+			// Якщо користувач все таки хоче зберегти проект
 			if (path != null)
 			{
 				try
 				{
+					// FileStream використовується для запису серіалізованого проекту у файл
 					using (FileStream fs = new FileStream(path, FileMode.OpenOrCreate))
 					{
 						formatter.Serialize(fs, project);
@@ -306,31 +359,47 @@ namespace dotnetpaint
 			}
 			
 		}
+		/// <summary>
+		/// Подія кнопки, яка відповідає за швидке збереження проекту у відомий шлях його розташування на пристрої. Якщо шлях не відомий - користувач зможе його вказати.
+		/// </summary>
 		private void SaveFileButton_Click(object sender, EventArgs e)
 		{
 			if (project != null)
 				SaveIntoFile(SavePath);
 		}
+		/// <summary>
+		/// Подія, яка викликається при закритті програми. Запитує користувача, чи хоче він зберегти проект у файл.
+		/// </summary>
 		private void Courseach_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			if (project != null && MessageBox.Show("Do you want to save current project?", "Project will be lost", MessageBoxButtons.YesNo) == DialogResult.Yes)
 				SaveIntoFile(SavePath);
 		}
+		/// <summary>
+		/// Подія кнопки, яка закриває програму.
+		/// </summary>
 		private void QuitButton_Click(object sender, EventArgs e)
 		{
 			Close();
 		}
-		// ============ Drawing on screen ===============
+		// ============ Малювання на екран ===============
+		/// <summary>
+		/// Подія, яка відповіда за перемальовку робочої поверхні.
+		/// </summary>
 		private void DrawingBox_Paint(object sender, PaintEventArgs e)
 		{
 			if (project != null)
 			{
+				// Очистити поточне зображення, щоб е було накладання
 				BufferLayer.Graphics.Clear(Color.Transparent);
 				project.GetFinalImage(BufferLayer);
 				if (BufferLayer.Image != null)
 					e.Graphics.DrawImage(BufferLayer.Image, 0, 0, DrawingBox.Width, DrawingBox.Height);
 			}
 		}
+		/// <summary>
+		/// Подія, яка викликається при зміні розміру програми. При виклику змінює розмір робочої поверхні, щоб вона завжди займала максимально багато місця.
+		/// </summary>
 		private void Courseach_Resize(object sender, EventArgs e)
 		{
 			if (project != null)
@@ -339,57 +408,60 @@ namespace dotnetpaint
 				DrawingBox.Refresh();
 			}
 		}
-
-		// ========== Mouse events ============================
+		// ========== Події мишки, потрібні для малювання ============================
+		/// <summary>
+		/// Подія, що викликається при натиску кнопки мишки на робочй поверхні.
+		/// </summary>
 		private void DrawingBox_MouseDown(object sender, MouseEventArgs e)
 		{
-			if (project != null && project.SelectedLayer != null)	// Only do something if there is a layer to work with
+			if (project != null && project.SelectedLayer != null)	// Тільки здійснювати дії коли в програмі відкритий проект
 			{
-				// Don't allow usage of tools while layer modification is in progress, witha an exception of the MoveTool
+				// Не дозволяти використання інструментів поки відбувається модифікація вмісту шару, за вийнятком інструменту переміщення шару.
 				if (ModifyCheckBox.Checked && CurUse != ToolUse.Transform)
 					MessageBox.Show("You can't use tools while shape modification is in progress.", "Drawing not allowed");
-				// Don't allow drawing on layers that contain a shape or text information. Using other tools is fine because they either 
-				// don't change the image or create a new layer to work on
+				/* Малювання на шарах, які містять дані про текст або фігуру, заборонено. Використання інших інструментів дозволене,
+				 бо вони або не змінюють зображення шару, або створюють новий шар для роботи.*/
 				else if (CurUse == ToolUse.Draw && (project.SelectedLayer.Shape != null || project.SelectedLayer.Text != null))
 				{
 					if (MessageBox.Show("You can't draw on shape layers. in order to do this you need to resterise the layer." +
 						" Would you like to resterise this layer? You will no longer be able to change the layer shape after this action.",
 						"Drawing not allowed", MessageBoxButtons.YesNo) == DialogResult.Yes)
 					{
-						// If user wishes to get rid of shape or text arguments and only leave the image
+						// Якщо користувач хоче позбутись від даних фігури або тексту, що містяться в шарі, та залишити тільки зображення.
+						// Така дія дозваоляє малювати на цьому шарі.
 						project.SelectedLayer.Shape = null;
 						project.SelectedLayer.Text = null;
-						SetShapeBoxes();
+						SetDimentionsBoxes();
 					}
 				}
-				// Else the tool usage is allowed
+				// В іншому випадку використання любих інструментів дозволене
 				else
 				{
 					DBMouseDown = true;
 					Point UsePoint = new Point();
-					// Because the drawingBox and project sizes are different there is a need to calculate where the cursor is located
-					// relative to the image
+					// Оскільки розміри робочої поверхні та проекту відрізняються, передача координат поверхні для роботи з шаром напряму не буде відображати позицію курсову на зображенні.
+					// Тому потрібно визначити, в яких координатах на зображенні знаходиться курсор.
 					UsePoint.X = e.X * project.Width / DrawingBox.Width;
 					UsePoint.Y = e.Y * project.Height / DrawingBox.Height;
 					if (CurUse == ToolUse.Draw)
 					{
-						// Take into account that image could have been moved with MoveTool
+						// Можливий випадок, коли зображення було переміщене.
 						UsePoint.X -= project.SelectedLayer.Location.X;
 						UsePoint.Y -= project.SelectedLayer.Location.Y;
 					}
 					
-					if (CurUse == ToolUse.Shape)   // If current tool is a shape
+					if (CurUse == ToolUse.Shape)   // Якщо поточний інструмент відповідає за роботу із фігурою.
 					{
-						// Create a new layer to create the shape on and select it
+						// Створити новий шар для цієї фігури (текст, доданий із допомогою інструменту ініціалізації тесту, вважається фігурою).
 						AddLayer("Layer " + (LayersTreeView.Nodes.Count + 1).ToString());
 						LayersTreeView.SelectedNode = LayersTreeView.Nodes[0];
 					}
-					// Pipette and text tools work differently enought to treat them separately
+					// Піпетка та інструмент для тексту відрізняються своєю роботою від інших, тому їх потрібно використовувати по іншому.
 					if (!(CurrentTool is PipetteTool))
-						CurrentTool.InitTool(UsePoint, project.SelectedLayer);
+						CurrentTool.InitTool(UsePoint, project.SelectedLayer);	// Ініціалізація інструменту
 					if (CurrentTool is TextInitTool)
 					{
-						// Clicking with the tool sets the position that text will be drawn from, there are no other usages
+						// Використання цього інструменту вказує на місце, звідки буде малюватись текст.
 						DBMouseDown = false;
 						ModifyCheckBox.Checked = true;
 						ModifyCheckBox.Visible = true;
@@ -399,11 +471,10 @@ namespace dotnetpaint
 					}
 					else if (CurrentTool is PipetteTool)
 					{
-						// Pipette is clicked, after what the color it picked up will be transfered to the tool
-						// that was selected before the pipette, and that tool is selected
+						// При використанні, піпетка обере колір із зображення, присвоїть його попередньому інструменту, та цей інструмент стане поточним.
 						CurrentTool.InitTool(UsePoint, BufferLayer);
 						DBMouseDown = false;
-						// There are two pipettes, one for primary color, and other for fill color
+						// Є дві піпетки: одна для основного кольору, та одна для кольору заливки фігури.
 						if (CurrentTool == Tools[7])
 						{
 							SetPrimaryColor(CurrentTool.ToolColor, PrevTool);
@@ -423,11 +494,15 @@ namespace dotnetpaint
 				}
 			}
 		}
-
+		/// <summary>
+		/// Подія, що викликається при руху мишки по робочій поверхні. Реалізує використання інструменту.
+		/// </summary>
 		private void DrawingBox_MouseMove(object sender, MouseEventArgs e)
 		{
+			// Тільки використовувати інструмент, якщо кнопка мишки натиснута.
 			if (DBMouseDown)
 			{
+				// Підрахунок позиції курсору на зображенні
 				Point UsePoint = new Point();
 				UsePoint.X = e.X * project.Width / DrawingBox.Width;
 				UsePoint.Y = e.Y * project.Height / DrawingBox.Height;
@@ -436,31 +511,40 @@ namespace dotnetpaint
 					UsePoint.X -= project.SelectedLayer.Location.X;
 					UsePoint.Y -= project.SelectedLayer.Location.Y;
 				}
+				// Використання інструменту
 				CurrentTool.UseTool(UsePoint);
 				DrawingBox.Refresh();
 			}
 		}
-
+		/// <summary>
+		/// Подія, що викликається, коли кнопка мишки перестає бути натиснутою.
+		/// </summary>
 		private void DrawingBox_MouseUp(object sender, MouseEventArgs e)
 		{
 			if (DBMouseDown)
 			{
 				DBMouseDown = false;
-				SetShapeBoxes();
+				SetDimentionsBoxes();
 			}
 		}
-		// ================== Layers controls =========================
+		// ================== Робота з шарами =========================
+		/// <summary>
+		/// Подія кнопки, що відповідає за додавання новго шару в проект.
+		/// </summary>
 		private void AddLayerButton_Click(object sender, EventArgs e)
 		{
 			AddLayer("Layer " + (LayersTreeView.Nodes.Count + 1).ToString());
 		}
-
+		/// <summary>
+		/// Відповідає за додавання нового шару в проект. Новий шар додається над всіма іншими.
+		/// </summary>
+		/// <param name="layerName">Назва нового шару.</param>
 		private void AddLayer(string layerName)
 		{
 			project.AddLayer(layerName);
-			// Layers in the project are drawn like this: first index - drawn at the background, last - at the top.
-			// Layers in the treeView go in another direction: index 0 in treeView is last index in the project and vice versa.
-			// This is made solely for interface clarity, because this way project top layer is located on the top of the treeView.
+			// Шари зберігаються в послідовному списку, та малюються в порядку, де перший індекс (0) це самий нижній шар, а останній - самий верхній.
+			// Індекси цих шарівв, щовідображаються користувачу, обернені, тобто 0 шар буде верхнім, а останній у списку нижнім.
+			// Це потрібно тільки для зручності та наглядності користувача, бо в такому випадку в LayersTreeView шари будуть відображтись в тому ж порядку, в якому малюються.
 
 			ModifyLayers = false;
 			LayersTreeView.Nodes.Add(layerName);
@@ -480,15 +564,19 @@ namespace dotnetpaint
 			}
 			ModifyLayers = true;
 			LayersTreeView.Nodes[0].Checked = true;
-
+			// Обрати новододаний шар.
 			SelectNode(0);
 		}
-
+		/// <summary>
+		/// Відповідає за вибір робочго шару в LayersTreeView та проекті.
+		/// </summary>
+		/// <param name="index">Індекс бажаного шару.</param>
 		private void SelectNode(int index)
 		{
 			LayersTreeView.SelectedNode = LayersTreeView.Nodes[index];
+			// Індекс цього шару в об'єкті проекту обернений.
 			project.SelectLayer(LayersTreeView.Nodes.Count - index - 1);
-
+			// Визначення позиції шару відносно інших шарів, та вирішення які дії над шарами повинні бути доступні.
 			if (!RemoveLayerButton.Enabled && LayersTreeView.Nodes.Count > 1)
 			{
 				RemoveLayerButton.Enabled = true;
@@ -504,11 +592,13 @@ namespace dotnetpaint
 				LayerUpButton.Enabled = true;
 			else
 				LayerUpButton.Enabled = false;
-
-			SetShapeBoxes();
+			// Винесення розмірів шару на екран.
+			SetDimentionsBoxes();
 			ModifyCheckBox.Checked = false;
 		}
-
+		/// <summary>
+		/// Подія кнопки, яка відповідає за видалення виділеного шару.
+		/// </summary>
 		private void RemoveLayerButton_Click(object sender, EventArgs e)
 		{
 			if (LayersTreeView.Nodes.Count > 1)
@@ -525,6 +615,9 @@ namespace dotnetpaint
 				DrawingBox.Refresh();
 			}
 		}
+		/// <summary>
+		/// Подія кнопки, яка відповідає за перенесення шару під нижній шар.
+		/// </summary>
 		private void LayerDownButton_Click(object sender, EventArgs e)
 		{
 			int selectedIndex = LayersTreeView.SelectedNode.Index;
@@ -537,7 +630,9 @@ namespace dotnetpaint
 
 			DrawingBox.Refresh();
 		}
-
+		/// <summary>
+		/// Подія кнопки, яка відповідає за перенесення шару над верхній шар.
+		/// </summary>
 		private void LayerUpButton_Click(object sender, EventArgs e)
 		{
 			int selectedIndex = LayersTreeView.SelectedNode.Index;
@@ -550,53 +645,59 @@ namespace dotnetpaint
 
 			DrawingBox.Refresh();
 		}
-		
 		/// <summary>
-		/// Selects a layer in the LayersTreeView.
+		/// Подія LayersTreeView, яка відповідає за обрання робочого шару.
 		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
 		private void LayersTreeView_AfterSelect(object sender, TreeViewEventArgs e)
 		{
 			SelectNode(e.Node.Index);
 		}
-
-		private void SetShapeBoxes()
+		/// <summary>
+		/// Відповідає за винесення розмірів шару на екран. Якщо поточний шар містить в собі інформацію про фігуру - будуть винесені її розміри.
+		/// </summary>
+		private void SetDimentionsBoxes()
 		{
-			if (project.SelectedLayer.Shape != null)    // Is a shape
+			if (project.SelectedLayer.Shape != null)    // Якщо шар містить фігуру
 			{
+				// Винести її розміри
 				LayerSizePanel.Visible = true;
 				LayerWidth.Value = project.SelectedLayer.Shape.Width;
 				LayerHeight.Value = project.SelectedLayer.Shape.Height;
 				ModifyCheckBox.Visible = true;
 			}
-			else if (project.SelectedLayer.Text != null)	// Is a text layer
+			else if (project.SelectedLayer.Text != null)	// якщо шар містить текст
 			{
+				// Сховати панель з розмірами шару
 				LayerSizePanel.Visible = false;
 				ModifyCheckBox.Visible = true;
 				LayerTextBox.Text = project.SelectedLayer.Text.Text;
 			}
-			else    // Is not a shape
+			else    // Якщо це просто шар із зображенням
 			{
+				// Винести його розміри
 				LayerSizePanel.Visible = true;
 				LayerWidth.Value = project.SelectedLayer.LayerSize.Width;
 				LayerHeight.Value = project.SelectedLayer.LayerSize.Height;
 				ModifyCheckBox.Visible = false;
 			}
 		}
-
+		/// <summary>
+		/// Подія LayersTreeView, яка вмикає або вимикає видимість шарів.
+		/// </summary>
 		private void LayersTreeView_AfterCheck(object sender, TreeViewEventArgs e)
 		{
 			if (ModifyLayers)
 			{
 				int ind = LayersTreeView.Nodes.Count - e.Node.Index - 1;
 
-				project.AllLayers[ind].Visible = e.Node.Checked;
+				project.Layers[ind].Visible = e.Node.Checked;
 				project.SelectLayer(project.SelectedLayerIndex);
 				DrawingBox.Refresh();
 			}
 		}
-
+		/// <summary>
+		/// Подія кнопки, яка відповідає за додання нового шару із зображенням з пристрою.
+		/// </summary>
 		private void LoadImageButton_Click(object sender, EventArgs e)
 		{
 			if (project != null)
@@ -609,10 +710,10 @@ namespace dotnetpaint
 					{
 						Bitmap bmp = new Bitmap(d.FileName);
 						AddLayer("Layer " + (LayersTreeView.Nodes.Count + 1).ToString());
-						project.SelectLayer(project.AllLayers.Count - 1);
+						project.SelectLayer(project.Layers.Count - 1);
 						project.SelectedLayer.Image = bmp;
 						DrawingBox.Refresh();
-						SetShapeBoxes();
+						SetDimentionsBoxes();
 					}
 					catch (IOException)
 					{
@@ -623,18 +724,29 @@ namespace dotnetpaint
 				
 			}
 		}
-
-		// ============== Tools buttons events ======================================
+		/// <summary>
+		/// Подія LayersTreeView, що відповідає за зміну назви шару в проекті після зміни назви поля на фаормі із його назвою.
+		/// </summary>
+		private void LayersTreeView_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
+		{
+			project.Layers[LayersTreeView.Nodes.Count - e.Node.Index - 1].Name = e.Label;
+		}
+		// ============== Події кнопок інструментів ======================================
+		/// <summary>
+		/// Відповідає за винесення основної інформації про інструмент на екран.
+		/// </summary>
 		private void SetToolInfo()
 		{
 			ColorButton.BackColor = CurrentTool.ToolColor;
 			WidthBar.Value = CurrentTool.ToolWidth;
 			AlphaBox.Value = CurrentTool.ToolColor.A;
-
 		}
-
+		/// <summary>
+		/// Визначає, чи потрібно робити видимими елементи управління кольором заливки.
+		/// </summary>
 		void SetFillColorButtonVisible()
 		{
+			// Тільки робити їх видимими коли іде робота із прямокутником або еліпсом.
 			if (CurrentTool == Tools[3] || CurrentTool == Tools[4])
 			{
 				FillColorButton.Visible = true;
@@ -649,7 +761,9 @@ namespace dotnetpaint
 				FillAlphaPanel.Visible = false;
 			}
 		}
-
+		/// <summary>
+		/// Подія кнопки, що відповідає за вибір інструменту пензлика.
+		/// </summary>
 		private void BrushButton_Click(object sender, EventArgs e)
 		{
 			if (!ModifyCheckBox.Checked && project != null)
@@ -665,7 +779,9 @@ namespace dotnetpaint
 				SetFillColorButtonVisible();
 			}
 		}
-
+		/// <summary>
+		/// Подія кнопки, що відповідає за вибір інструменту стирачки.
+		/// </summary>
 		private void EraserButton_Click(object sender, EventArgs e)
 		{
 			if (!ModifyCheckBox.Checked && project != null)
@@ -681,7 +797,11 @@ namespace dotnetpaint
 				SetFillColorButtonVisible();
 			}
 		}
-
+		/// <summary>
+		/// Відповідає за установку основного кольору для інструменту.
+		/// </summary>
+		/// <param name="color">Колір.</param>
+		/// <param name="tool">Інструмент.</param>
 		void SetPrimaryColor(Color color, ToolBase tool)
 		{
 			if (ModifyCheckBox.Checked)
@@ -701,7 +821,9 @@ namespace dotnetpaint
 			AlphaBox.Value = color.A;
 			ColorButton.BackColor = color;
 		}
-
+		/// <summary>
+		/// Подія кнопки, що відповідає за вибір основного кольору інструменту.
+		/// </summary>
 		private void ColorButton_Click(object sender, EventArgs e)
 		{
 			if (project != null)
@@ -717,7 +839,11 @@ namespace dotnetpaint
 				}
 			}
 		}
-
+		/// <summary>
+		/// Відповідає за установку кольору заливки для інструменту.
+		/// </summary>
+		/// <param name="color">Колір.</param>
+		/// <param name="tool">Інструмент.</param>
 		void SetFillColor(Color color, ToolBase tool)
 		{
 			if (ModifyCheckBox.Checked)
@@ -736,6 +862,9 @@ namespace dotnetpaint
 			FillColorButton.BackColor = color;
 			FillAlphaPanel.Visible = true;
 		}
+		/// <summary>
+		/// Подія кнопки, що відповідає за вибір кольору заливки інструменту.
+		/// </summary>
 		private void FillColorButton_Click(object sender, EventArgs e)
 		{
 			if (project != null)
@@ -749,7 +878,9 @@ namespace dotnetpaint
 				d.Dispose();
 			}
 		}
-		// Shapes
+		/// <summary>
+		/// Подія кнопки, що відповідає за вибір останнього обраного інструменту фігури.
+		/// </summary>
 		private void ShapeToolsButton_ButtonClick(object sender, EventArgs e)
 		{
 			if (!ModifyCheckBox.Checked && project != null)
@@ -765,7 +896,9 @@ namespace dotnetpaint
 				SetFillColorButtonVisible();
 			}
 		}
-
+		/// <summary>
+		/// Подія кнопки, що відповідає за вибір інструменту лінії.
+		/// </summary>
 		private void lineToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (!ModifyCheckBox.Checked && project != null)
@@ -783,7 +916,9 @@ namespace dotnetpaint
 				SetFillColorButtonVisible();
 			}
 		}
-
+		/// <summary>
+		/// Подія кнопки, що відповідає за вибір інструменту прямокутника.
+		/// </summary>
 		private void RectangleButton_Click(object sender, EventArgs e)
 		{
 			if (!ModifyCheckBox.Checked && project != null)
@@ -801,6 +936,9 @@ namespace dotnetpaint
 				SetFillColorButtonVisible();
 			}
 		}
+		/// <summary>
+		 /// Подія кнопки, що відповідає за вибір інструменту еліпса.
+		 /// </summary>
 		private void EllipseButton_Click(object sender, EventArgs e)
 		{
 			if (!ModifyCheckBox.Checked && project != null)
@@ -818,14 +956,15 @@ namespace dotnetpaint
 				SetFillColorButtonVisible();
 			}
 		}
+		/// <summary>
+		/// Подія кнопки, що відповідає за вибір інструменту переміщення зображення.
+		/// </summary>
 		private void MoveToolButton_Click(object sender, EventArgs e)
 		{
 			if (project != null)
 			{
 				project.Compositing = CompositingMode.SourceOver;
 				CurrentTool = Tools[5];
-				//WidthBar.Value = CurrentTool.ToolWidth;
-				//ColorButton.BackColor = CurrentTool.ToolColor;
 				CurUse = ToolUse.Transform;
 
 				LastUsedButton.BackColor = Color.Transparent;
@@ -834,6 +973,9 @@ namespace dotnetpaint
 				SetFillColorButtonVisible();
 			}
 		}
+		/// <summary>
+		/// Подія кнопки, що відповідає за вибір інструменту ініціалізації тексту.
+		/// </summary>
 		private void TextButton_Click(object sender, EventArgs e)
 		{
 			if (!ModifyCheckBox.Checked && project != null)
@@ -849,7 +991,9 @@ namespace dotnetpaint
 				SetFillColorButtonVisible();
 			}
 		}
-
+		/// <summary>
+		/// Подія кнопки, що відповідає за вибір інструменту піпетки для вибору основного кольору.
+		/// </summary>
 		private void PipetteToolButton_Click(object sender, EventArgs e)
 		{
 			if ((CurUse == ToolUse.Shape || CurrentTool == Tools[0] || ModifyCheckBox.Checked) && project != null)
@@ -861,11 +1005,12 @@ namespace dotnetpaint
 
 				LastUsedButton.BackColor = Color.Transparent;
 				PipetteToolButton.BackColor = Color.LightBlue;
-				//LastUsedButton = PipetteToolButton;
 				SetFillColorButtonVisible();
 			}
 		}
-
+		/// <summary>
+		/// Подія кнопки, що відповідає за вибір інструменту піпетки для вибору кольору заливки.
+		/// </summary>
 		private void FillPipetteButton_Click(object sender, EventArgs e)
 		{
 			if ((CurUse == ToolUse.Shape || CurrentTool == Tools[0] || ModifyCheckBox.Checked) && project != null)
@@ -880,7 +1025,10 @@ namespace dotnetpaint
 			}
 		}
 
-		// ============================== Parameters buttons =======================
+		// ============================== Кнопки параметрів шарів та інструментів =======================
+		/// <summary>
+		/// Подія кнопки, що відповідає за зміну розміру проекту.
+		/// </summary>
 		private void ResizeProjButton_Click(object sender, EventArgs e)
 		{
 			ProjectCreationWindow d = new ProjectCreationWindow();
@@ -889,14 +1037,16 @@ namespace dotnetpaint
 			{
 				project.Size = d.NewProjectSize;
 				DrawingBox.Refresh();
-				SetShapeBoxes();
+				SetDimentionsBoxes();
 				CountDrawingBoxSize();
 				BufferLayer.LayerSize = d.NewProjectSize;
 			}
 
 			d.Dispose();
 		}
-
+		/// <summary>
+		/// Подія повзунка значень для зміни розміру інструменту.
+		/// </summary>
 		private void WidthBar_ValueChanged(object sender, EventArgs e)
 		{
 			if (ModifyCheckBox.Checked)
@@ -914,12 +1064,17 @@ namespace dotnetpaint
 				CurrentTool.ToolWidth = WidthBar.Value;
 			ToolWidthBox.Value = WidthBar.Value;
 		}
-
+		/// <summary>
+		/// Подія числового поля для зміни розміру інструменту.
+		/// </summary>
 		private void ToolWidthBox_ValueChanged(object sender, EventArgs e)
 		{
 			if (ToolWidthBox.Value != WidthBar.Value)
 				WidthBar.Value = (int)ToolWidthBox.Value;
 		}
+		/// <summary>
+		/// Подія числового поля для зміни прозорості основного кольору.
+		/// </summary>
 		private void AlphaBox_ValueChanged(object sender, EventArgs e)
 		{
 			Color temp;
@@ -946,7 +1101,9 @@ namespace dotnetpaint
 			
 			ColorButton.BackColor = temp;
 		}
-
+		/// <summary>
+		/// Подія числового поля для зміни прозорості кольору заливки.
+		/// </summary>
 		private void FillAlphaBox_ValueChanged(object sender, EventArgs e)
 		{
 			if (FillAlphaBox.Value == 0)
@@ -973,7 +1130,9 @@ namespace dotnetpaint
 				FillColorButton.BackColor = temp;
 			}
 		}
-
+		/// <summary>
+		/// Подія числового поля для зміни довжини шару або фігури.
+		/// </summary>
 		private void LayerWidth_ValueChanged(object sender, EventArgs e)
 		{
 			if (project.SelectedLayer.Shape != null)
@@ -988,7 +1147,9 @@ namespace dotnetpaint
 				project.SelectedLayer.Width = (int)LayerWidth.Value;
 			DrawingBox.Refresh();
 		}
-
+		/// <summary>
+		/// Подія числового поля для зміни висоти шару або фігури.
+		/// </summary>
 		private void LayerHeight_ValueChanged(object sender, EventArgs e)
 		{
 			if (project.SelectedLayer.Shape != null && project.SelectedLayer.Shape.Height != (int)LayerWidth.Value)
@@ -1003,19 +1164,19 @@ namespace dotnetpaint
 				project.SelectedLayer.Height = (int)LayerHeight.Value;
 			DrawingBox.Refresh();
 		}
-
 		/// <summary>
-		/// When checked - all boxes contain info about the existing shape.
-		/// When unchecked - all boxed contain info about current tool.
+		/// Подія зміни значення поля, яке вказує, відбувається зараз модифікація фігури чи ні.
+		/// Коли checked - відбувається, в іншому випадку - ні.
 		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
 		private void ModifyCheckBox_CheckedChanged(object sender, EventArgs e)
 		{
+			// Якщо модифікація починається
 			if (ModifyCheckBox.Checked)
 			{
+				// Якщо поточний шар містить інформацію про фігуру.
 				if (project.SelectedLayer.Shape != null)
 				{
+					// Заповнити поля на формі інформацією про цю фігуру.
 					ColorButton.BackColor = project.SelectedLayer.Shape.Color;
 					FillColorButton.BackColor = project.SelectedLayer.Shape.FillColor;
 					AlphaBox.Value = project.SelectedLayer.Shape.Color.A;
@@ -1029,8 +1190,10 @@ namespace dotnetpaint
 							FillAlphaPanel.Visible = true;
 					}
 				}
+				// Якщо поточний шар містить інформацію про текст.
 				else if (project.SelectedLayer.Text != null)
 				{
+					// Заповнити поля на формі інформацією цього тексту.
 					ColorButton.BackColor = project.SelectedLayer.Text.Color;
 					AlphaBox.Value = project.SelectedLayer.Text.Color.A;
 					WidthBar.Value = (int)project.SelectedLayer.Text.Size;
@@ -1038,8 +1201,10 @@ namespace dotnetpaint
 					TextGB.Visible = true;
 				}
 			}
+			// Якщо модифікація закінчується.
 			else
 			{
+				// Заповнити поля форми інформацією про поточний інструмент.
 				ColorButton.BackColor = CurrentTool.ToolColor;
 				FillColorButton.BackColor = CurrentTool.FillColor;
 				AlphaBox.Value = CurrentTool.ToolColor.A;
@@ -1049,32 +1214,40 @@ namespace dotnetpaint
 				TextGB.Visible = false;
 			}
 		}
-
+		/// <summary>
+		/// Подія, що викликається при зміні видимості кнопки вибору кольору заливки.
+		/// </summary>
 		private void FillColorButton_VisibleChanged(object sender, EventArgs e)
 		{
+			// Якщо відбувається модифікація фігури це поле ховати не потрібно в будь якому випадку.
 			if (ModifyCheckBox.Checked)
 			{
 				FillColorButton.Visible = true;
-				FillPipetteButton.Visible = true;
 			}
 		}
-
+		/// <summary>
+		/// Подія, що викликається при зміні видимості кнопки вибору піпетки для кольору заливки.
+		/// </summary>
 		private void FillPipetteButton_VisibleChanged(object sender, EventArgs e)
 		{
+			// Якщо відбувається модифікація фігури це поле ховати не потрібно в будь якому випадку.
 			if (ModifyCheckBox.Checked)
 			{
-				FillColorButton.Visible = true;
 				FillPipetteButton.Visible = true;
 			}
 		}
-
+		/// <summary>
+		/// Подія зміни тексту в полі з текстом шару. Присвоює текст із цього поля тексту шару.
+		/// </summary>
 		private void LayerTextBox_TextChanged(object sender, EventArgs e)
 		{
 			project.SelectedLayer.Text.Text = LayerTextBox.Text;
 			project.SelectedLayer.RefreshContents();
 			DrawingBox.Refresh();
 		}
-
+		/// <summary>
+		/// Подія кнопки, що відповідає за вибір шрифту тексту.
+		/// </summary>
 		private void FontSelectionButton_Click(object sender, EventArgs e)
 		{
 			FontDialog d = new FontDialog();
@@ -1090,16 +1263,5 @@ namespace dotnetpaint
 			}
 			d.Dispose();
 		}
-
-		
-
-
-
-
-
-
-
-		// ===========================
-
 	}
 }
