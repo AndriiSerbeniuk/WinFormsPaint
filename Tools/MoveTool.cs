@@ -14,12 +14,6 @@ namespace dotnetpaint
 		public MoveTool() : base()
 		{ }
 		/// <summary>
-		/// Конструктор, який ініціалізує інструмент значеннями із параметрів.
-		/// </summary>
-		/// <param name="width">Ширина інструменту.</param>
-		public MoveTool(int width) : base(Color.Transparent, width)
-		{ }
-		/// <summary>
 		/// Готує інструмент до роботи: встановлює початкову точку, яка представляє початкове розташування шару, та робочий шар..
 		/// </summary>
 		/// <param name="InitPoint">Початкова точка.</param>
@@ -79,7 +73,8 @@ namespace dotnetpaint
 		/// <returns>Копія інструменту.</returns>
 		public override ToolBase Clone()
 		{
-			throw new NotImplementedException();
+			MoveTool clone = new MoveTool();
+			return clone;
 		}
 	}
 }

@@ -108,6 +108,10 @@ namespace dotnetpaint
 				{
 					MessageBox.Show("An error occured while loading the image.", "Error");
 				}
+				catch (ArgumentException)
+				{
+					MessageBox.Show("File you've selected isn't an image.", "Error");
+				}
 			}
 
 			d.Dispose();
@@ -128,7 +132,7 @@ namespace dotnetpaint
 					{
 						// Якщо в програмі уже відкритий проект його варто зберегти.
 						Project temp = (Project)formatter.Deserialize(fs);
-						if (project != null)
+						if (project != null && MessageBox.Show("Do you want to save current project?", "Project will be lost", MessageBoxButtons.YesNo) == DialogResult.Yes)
 							SaveIntoFile(SavePath);
 						project = temp;
 						project.SelectLayer(project.Layers.Count - 1);
@@ -802,7 +806,7 @@ namespace dotnetpaint
 		/// </summary>
 		/// <param name="color">Колір.</param>
 		/// <param name="tool">Інструмент.</param>
-		void SetPrimaryColor(Color color, ToolBase tool)
+		private void SetPrimaryColor(Color color, ToolBase tool)
 		{
 			if (ModifyCheckBox.Checked)
 			{
@@ -844,7 +848,7 @@ namespace dotnetpaint
 		/// </summary>
 		/// <param name="color">Колір.</param>
 		/// <param name="tool">Інструмент.</param>
-		void SetFillColor(Color color, ToolBase tool)
+		private void SetFillColor(Color color, ToolBase tool)
 		{
 			if (ModifyCheckBox.Checked)
 			{
@@ -937,8 +941,8 @@ namespace dotnetpaint
 			}
 		}
 		/// <summary>
-		 /// Подія кнопки, що відповідає за вибір інструменту еліпса.
-		 /// </summary>
+		/// Подія кнопки, що відповідає за вибір інструменту еліпса.
+		/// </summary>
 		private void EllipseButton_Click(object sender, EventArgs e)
 		{
 			if (!ModifyCheckBox.Checked && project != null)
@@ -1031,18 +1035,21 @@ namespace dotnetpaint
 		/// </summary>
 		private void ResizeProjButton_Click(object sender, EventArgs e)
 		{
-			ProjectCreationWindow d = new ProjectCreationWindow();
-
-			if (d.ShowDialog() == DialogResult.OK) 
+			if (project != null)
 			{
-				project.Size = d.NewProjectSize;
-				DrawingBox.Refresh();
-				SetDimentionsBoxes();
-				CountDrawingBoxSize();
-				BufferLayer.LayerSize = d.NewProjectSize;
-			}
+				ProjectCreationWindow d = new ProjectCreationWindow();
 
-			d.Dispose();
+				if (d.ShowDialog() == DialogResult.OK)
+				{
+					project.Size = d.NewProjectSize;
+					DrawingBox.Refresh();
+					SetDimentionsBoxes();
+					CountDrawingBoxSize();
+					BufferLayer.LayerSize = d.NewProjectSize;
+				}
+
+				d.Dispose();
+			}
 		}
 		/// <summary>
 		/// Подія повзунка значень для зміни розміру інструменту.
