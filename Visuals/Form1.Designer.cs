@@ -132,7 +132,7 @@
             this.DrawSurfPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.DrawSurfPanel.Location = new System.Drawing.Point(4, 60);
             this.DrawSurfPanel.Name = "DrawSurfPanel";
-            this.DrawSurfPanel.Size = new System.Drawing.Size(911, 583);
+            this.DrawSurfPanel.Size = new System.Drawing.Size(910, 583);
             this.DrawSurfPanel.TabIndex = 4;
             // 
             // DrawingBox
@@ -167,7 +167,7 @@
             this.MainTableLayout.ColumnCount = 3;
             this.MainTableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 58F));
             this.MainTableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.MainTableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 275F));
+            this.MainTableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 276F));
             this.MainTableLayout.Controls.Add(this.ToolsStrip, 0, 0);
             this.MainTableLayout.Controls.Add(this.RightLayoutPanel, 2, 0);
             this.MainTableLayout.Controls.Add(this.DrawingPlusToolsPanel, 1, 0);
@@ -357,13 +357,13 @@
             this.RightLayoutPanel.Controls.Add(this.LayersGroupBox, 0, 1);
             this.RightLayoutPanel.Controls.Add(this.panel3, 0, 0);
             this.RightLayoutPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.RightLayoutPanel.Location = new System.Drawing.Point(989, 4);
+            this.RightLayoutPanel.Location = new System.Drawing.Point(988, 4);
             this.RightLayoutPanel.Name = "RightLayoutPanel";
             this.RightLayoutPanel.RowCount = 2;
             this.RightLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
             this.RightLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 463F));
             this.RightLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.RightLayoutPanel.Size = new System.Drawing.Size(269, 647);
+            this.RightLayoutPanel.Size = new System.Drawing.Size(270, 647);
             this.RightLayoutPanel.TabIndex = 6;
             // 
             // LayersGroupBox
@@ -372,7 +372,7 @@
             this.LayersGroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.LayersGroupBox.Location = new System.Drawing.Point(4, 65);
             this.LayersGroupBox.Name = "LayersGroupBox";
-            this.LayersGroupBox.Size = new System.Drawing.Size(261, 578);
+            this.LayersGroupBox.Size = new System.Drawing.Size(262, 578);
             this.LayersGroupBox.TabIndex = 0;
             this.LayersGroupBox.TabStop = false;
             this.LayersGroupBox.Text = "Layers";
@@ -390,7 +390,7 @@
             this.LayersTreeView.LabelEdit = true;
             this.LayersTreeView.Location = new System.Drawing.Point(3, 16);
             this.LayersTreeView.Name = "LayersTreeView";
-            this.LayersTreeView.Size = new System.Drawing.Size(255, 559);
+            this.LayersTreeView.Size = new System.Drawing.Size(256, 559);
             this.LayersTreeView.TabIndex = 0;
             this.LayersTreeView.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.LayersTreeView_AfterLabelEdit);
             this.LayersTreeView.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.LayersTreeView_AfterCheck);
@@ -402,7 +402,7 @@
             this.panel3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel3.Location = new System.Drawing.Point(4, 4);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(261, 54);
+            this.panel3.Size = new System.Drawing.Size(262, 54);
             this.panel3.TabIndex = 2;
             // 
             // LayerControlsGroupBox
@@ -414,7 +414,7 @@
             this.LayerControlsGroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.LayerControlsGroupBox.Location = new System.Drawing.Point(0, 0);
             this.LayerControlsGroupBox.Name = "LayerControlsGroupBox";
-            this.LayerControlsGroupBox.Size = new System.Drawing.Size(261, 54);
+            this.LayerControlsGroupBox.Size = new System.Drawing.Size(262, 54);
             this.LayerControlsGroupBox.TabIndex = 3;
             this.LayerControlsGroupBox.TabStop = false;
             this.LayerControlsGroupBox.Text = "Layer controls";
@@ -480,7 +480,7 @@
             this.DrawingPlusToolsPanel.RowCount = 2;
             this.DrawingPlusToolsPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 55F));
             this.DrawingPlusToolsPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.DrawingPlusToolsPanel.Size = new System.Drawing.Size(919, 647);
+            this.DrawingPlusToolsPanel.Size = new System.Drawing.Size(918, 647);
             this.DrawingPlusToolsPanel.TabIndex = 7;
             // 
             // flowLayoutPanel1
@@ -494,7 +494,7 @@
             this.flowLayoutPanel1.Controls.Add(this.TextGB);
             this.flowLayoutPanel1.Location = new System.Drawing.Point(4, 4);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(911, 49);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(910, 49);
             this.flowLayoutPanel1.TabIndex = 5;
             // 
             // ToolParametersPanel
@@ -662,11 +662,6 @@
             0,
             0,
             0});
-            this.LayerHeight.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
             this.LayerHeight.Name = "LayerHeight";
             this.LayerHeight.Size = new System.Drawing.Size(52, 20);
             this.LayerHeight.TabIndex = 3;
@@ -687,11 +682,6 @@
             this.LayerWidth.Location = new System.Drawing.Point(22, 14);
             this.LayerWidth.Maximum = new decimal(new int[] {
             10000,
-            0,
-            0,
-            0});
-            this.LayerWidth.Minimum = new decimal(new int[] {
-            1,
             0,
             0,
             0});
