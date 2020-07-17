@@ -792,6 +792,7 @@ namespace dotnetpaint
 			{
 				project.Compositing = CompositingMode.SourceCopy;
 				CurrentTool = Tools[1];
+				CurrentTool.ToolColor = Color.Transparent;
 				WidthBar.Value = CurrentTool.ToolWidth;
 				CurUse = ToolUse.Draw;
 
@@ -1097,16 +1098,18 @@ namespace dotnetpaint
 					temp = Color.FromArgb((int)AlphaBox.Value, project.SelectedLayer.Text.Color);
 					project.SelectedLayer.Text.Color = temp;
 				}
-					project.SelectedLayer.RefreshContents();
+				project.SelectedLayer.RefreshContents();
+				ColorButton.BackColor = temp;
 				DrawingBox.Refresh();
 			}
-			else
+			else if (CurrentTool != Tools[1])
 			{
 				temp = Color.FromArgb((int)AlphaBox.Value, CurrentTool.ToolColor);
 				CurrentTool.ToolColor = temp;
+				ColorButton.BackColor = temp;
 			}
 			
-			ColorButton.BackColor = temp;
+			
 		}
 		/// <summary>
 		/// Подія числового поля для зміни прозорості кольору заливки.
